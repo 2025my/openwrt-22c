@@ -321,7 +321,7 @@ jobs:
           fi
 
           # Clone source code
-          git clone -q --single-branch --depth=1 --branch=v23.05.5 https://github.com/openwrt/openwrt openwrt openwrt
+          git clone -q --single-branch --depth=1 --branch=v23.05.5 https://github.com/openwrt/openwrt.git openwrt
           ln -sf /builder/openwrt ${GITHUB_WORKSPACE}/openwrt
           ln -sf /builder/openwrt /home/runner/work/_actions/ophub/amlogic-s9xxx-openwrt/main/openwrt
 
