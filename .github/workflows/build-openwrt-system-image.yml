@@ -1,3 +1,4 @@
+
 #============================================================================================
 # https://github.com/ophub/amlogic-s9xxx-openwrt
 # Description: Build OpenWrt system image
@@ -141,42 +142,51 @@ jobs:
           sudo mount /dev/github/runner /builder
           sudo chown -R runner.runner /builder
           df -Th
-
       - name: Clone source code [ ${{ inputs.source_branch }} ]
         id: codes
         working-directory: /builder
         if: ${{ steps.init.outputs.status }} == 'success' && !cancelled()
         run: |
-          # Set up compilation source code
+          # 判断来源仓库
           if [[ "${{ inputs.source_branch }}" == *"openwrt"* ]]; then
               REPO_URL="https://github.com/openwrt/openwrt"
-              REPO_BRANCH="main"
               TAGS_NAME="official"
           elif [[ "${{ inputs.source_branch }}" == *"lede"* ]]; then
               REPO_URL="https://github.com/coolsnowwolf/lede"
-              REPO_BRANCH="master"
               TAGS_NAME="lede"
           elif [[ "${{ inputs.source_branch }}" == *"immortalwrt"* ]]; then
               REPO_URL="https://github.com/immortalwrt/immortalwrt"
-              REPO_BRANCH="master"
               TAGS_NAME="immortalwrt"
           else
               echo "Unknown source code repository."
               exit 1
           fi
 
-          # Clone source code
-          git clone -q --single-branch --depth=1 --branch=${REPO_BRANCH} ${REPO_URL} openwrt
+          # 如果输入的是分支，就直接 clone；如果是 tag，就 checkout
+          BRANCH_OR_TAG=$(echo "${{ inputs.source_branch }}" | sed -E 's/.*[:|/]//')
+
+          if git ls-remote --heads ${REPO_URL} ${BRANCH_OR_TAG} | grep ${BRANCH_OR_TAG}; then
+              echo "选择的是分支: ${BRANCH_OR_TAG}"
+              git clone -q --single-branch --depth=1 --branch=${BRANCH_OR_TAG} ${REPO_URL} openwrt
+          else
+              echo "选择的是 tag: ${BRANCH_OR_TAG}"
+              git clone -q ${REPO_URL} openwrt
+              cd openwrt
+              git checkout ${BRANCH_OR_TAG}
+          fi
+
+          # 建立软链接
           ln -sf /builder/openwrt ${GITHUB_WORKSPACE}/openwrt
           ln -sf /builder/openwrt /home/runner/work/_actions/ophub/amlogic-s9xxx-openwrt/main/openwrt
 
-          # Set output information
+          # 输出信息
           echo "build_tag=OpenWrt_${TAGS_NAME}_${{ inputs.openwrt_storage }}_$(date +"%Y.%m")" >> ${GITHUB_OUTPUT}
-          echo -e "REPO_URL: [ ${REPO_URL} ]\nREPO_BRANCH: [ ${REPO_BRANCH} ]\nTAGS_NAME: [ ${TAGS_NAME} ]"
+          echo -e "REPO_URL: [ ${REPO_URL} ]\nBRANCH_OR_TAG: [ ${BRANCH_OR_TAG} ]\nTAGS_NAME: [ ${TAGS_NAME} ]"
           df -hT ${PWD}
           echo "REPO_URL=${REPO_URL}" >> ${GITHUB_OUTPUT}
           echo "TAGS_NAME=${TAGS_NAME}" >> ${GITHUB_OUTPUT}
           echo "status=success" >> ${GITHUB_OUTPUT}
+
 
       - name: Load custom feeds
         run: |
