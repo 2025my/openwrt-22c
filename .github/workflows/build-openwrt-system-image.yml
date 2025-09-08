@@ -321,9 +321,7 @@ jobs:
           fi
 
           # Clone source code
-          REPO_URL=https://github.com/immortalwrt/immortalwrt.git
-          REPO_BRANCH=openwrt-v24.10.0
-          git clone -q --single-branch --depth=1 --branch=${REPO_BRANCH} ${REPO_URL} openwrt
+          git clone -q --single-branch --depth=1 --branch=v24.10.0 ${REPO_URL} openwrt
 
           ln -sf /builder/openwrt ${GITHUB_WORKSPACE}/openwrt
           ln -sf /builder/openwrt /home/runner/work/_actions/ophub/amlogic-s9xxx-openwrt/main/openwrt
