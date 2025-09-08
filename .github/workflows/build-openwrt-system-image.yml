@@ -24,7 +24,10 @@ on:
         default: "all"
         type: choice
         options:
-          - s905l3a 
+          - all
+          - s905l3a
+          - rk3568
+          - armvirt 
       openwrt_kernel:
         description: "Select kernel version"
         required: false
