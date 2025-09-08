@@ -24,9 +24,7 @@ on:
         default: "all"
         type: choice
         options:
-        
-          - s905l3a
-          
+          - s905l3a 
       openwrt_kernel:
         description: "Select kernel version"
         required: false
